@@ -1,36 +1,165 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const AvaliaMusica());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+class AvaliaMusica extends StatelessWidget {
+  const AvaliaMusica({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    Color color = Theme.of(context).primaryColor;
+
+    Widget regiaoDoTitulo = Container(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.only(top: 2),
+            child: const Text(
+              'Ciência de Dados para análise de Gosto Musical',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Widget regiaoMsgExplicativa = const Padding(
+      padding: EdgeInsets.all(24),
+      child: Text(
+        'Vamos avaliar uma música? Clique em ‘Nova Avaliação’ e eu '
+        'te passo uma música. Aí você me conta se gosta ou não e eu '
+        'te falo minha avaliação, ok?',
+        softWrap: true,
+      ),
+    );
+
+    Widget regiaoDosBotoesDeEscolha = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildButtonColumn(Colors.greenAccent, Icons.favorite, 'Gosto'),
+        _buildButtonColumn(
+            Colors.redAccent, Icons.favorite_border, 'Não Gosto'),
+        _buildButtonColumn(color, Icons.flutter_dash, 'Indiferente'),
+      ],
+    );
+    Widget regiaoDosBotoesDeAcao = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildButtonColumn(color, Icons.add, 'Nova Avaliação'),
+        _buildButtonColumn(color, Icons.query_stats, 'Estatísticas'),
+      ],
+    );
+    Widget regiaoNomeDaMusica = Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: const Text(
+                    'Música a Avaliar',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Text(
+                  'Milton Nascimento :> Clube da Esquina',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    Widget regiaoMsgResultado = Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: const Text(
+                    'Resultado:',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Text(
+                  'Muito bem!!!!',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
     return MaterialApp(
       title: 'Avalia Música',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.cyan,
+        primaryColor: Colors.cyan,
       ),
-      home: const MyHomePage(title: 'Avalia Música'),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Avalia Música'),
+        ),
+        body: Column(
+          children: [
+            regiaoDoTitulo,
+            regiaoMsgExplicativa,
+            regiaoDosBotoesDeAcao,
+            regiaoNomeDaMusica,
+            regiaoDosBotoesDeEscolha,
+            regiaoMsgResultado,
+          ],
+        ),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
+Column _buildButtonColumn(Color color, IconData icon, String label) {
+  return Column(
+    mainAxisSize: MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(icon, color: color),
+      Container(
+        margin: const EdgeInsets.only(top: 8, bottom: 8),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: color,
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+class MinhaHomePage extends StatefulWidget {
+  const MinhaHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -44,11 +173,13 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MinhaHomePage> createState() => _MinhaHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MinhaHomePageState extends State<MinhaHomePage> {
   int _counter = 0;
+  String linha1 = "minha primeira linha:";
+  String linha2 = "minha segunda linha:";
 
   void _incrementCounter() {
     setState(() {
@@ -71,7 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
+        // Here we take the value from the MinhaHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
@@ -95,8 +226,11 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+            Text(
+              linha1,
+            ),
+            Text(
+              linha2,
             ),
             Text(
               '$_counter',
