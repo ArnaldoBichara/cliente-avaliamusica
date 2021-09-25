@@ -50,59 +50,61 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String musicaSendoAvaliada = '';
+  String estatisticas = '';
+
   bool _boolCurteAMusica = false;
+  bool _boolNaoCurteAMusica = false;
+  bool _boolIndiferenteAMusica = false;
+
   void _botaoCurteAcionado() {
     setState(() {
-      if (_boolCurteAMusica) {
-        _boolCurteAMusica = false;
-      } else {
-        _boolCurteAMusica = true;
-      }
+      _boolCurteAMusica = true;
+      _boolNaoCurteAMusica = false;
+      _boolIndiferenteAMusica = false;
     });
   }
 
-  bool _boolNaoCurteAMusica = false;
-  void _botaoNaoCurteAcionado() {
-    setState(() {
-      if (_boolNaoCurteAMusica) {
-        _boolNaoCurteAMusica = false;
-      } else {
-        _boolNaoCurteAMusica = true;
-      }
-    });
-  }
-
-  bool _boolIndiferenteAMusica = false;
-  void _botaoIndiferenteAcionado() {
-    setState(() {
-      if (_boolIndiferenteAMusica) {
-        _boolIndiferenteAMusica = false;
-      } else {
-        _boolIndiferenteAMusica = true;
-      }
-    });
-  }
-
-  bool _boolAvaliarMus = false;
+  final bool _boolMusEmAvaliacao = true;
   void _botaoAvaliarMusAcionado() {
     setState(() {
-      if (_boolAvaliarMus) {
-        _boolAvaliarMus = false;
-      } else {
-        _boolAvaliarMus = true;
-      }
+      executarAPIdeAvaliacaoMusical();
     });
   }
 
-  bool _boolGetStats = false;
+  void _botaoNaoCurteAcionado() {
+    setState(() {
+      _boolCurteAMusica = false;
+      _boolNaoCurteAMusica = true;
+      _boolIndiferenteAMusica = false;
+    });
+  }
+
+  void _botaoIndiferenteAcionado() {
+    setState(() {
+      _boolCurteAMusica = false;
+      _boolNaoCurteAMusica = false;
+      _boolIndiferenteAMusica = true;
+    });
+  }
+
+  final bool _boolGetStats = true;
   void _botaoEstatsAcionado() {
     setState(() {
-      if (_boolGetStats) {
-        _boolGetStats = false;
-      } else {
-        _boolGetStats = true;
-      }
+      estatisticas = getEstats();
     });
+  }
+
+  int _contador = 0;
+  void executarAPIdeAvaliacaoMusical() {
+    _contador++;
+    musicaSendoAvaliada = 'Mais uma do Milton ' + _contador.toString();
+  }
+
+  int _contador2 = 0;
+  String getEstats() {
+    _contador2++;
+    return "Estatísticas saindo do forno: " + _contador2.toString();
   }
 
   @override
@@ -148,11 +150,13 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget regiaoDosBotoesDeAcao = Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildButtonColumn1(color, Icons.add, 'Nova Avaliação'),
-        _buildButtonColumn1(color, Icons.query_stats, 'Estatísticas'),
+        _buildButtonColumn('Nova Avaliação', color, _boolMusEmAvaliacao,
+            Icons.add, Icons.add, _botaoAvaliarMusAcionado),
+        _buildButtonColumn('Estatísticas', color, _boolGetStats,
+            Icons.query_stats, Icons.query_stats, _botaoEstatsAcionado),
       ],
     );
-    Widget regiaoNomeDaMusica = Container(
+    Widget regiaomusicaSendoAvaliada = Container(
       padding: const EdgeInsets.all(24),
       child: Row(
         children: [
@@ -170,8 +174,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                const Text(
-                  'Milton Nascimento :> Clube da Esquina',
+                Text(
+                  musicaSendoAvaliada,
                 ),
               ],
             ),
@@ -197,8 +201,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 ),
-                const Text(
-                  'Muito bem!!!!',
+                Text(
+                  estatisticas,
                 ),
               ],
             ),
@@ -222,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
             regiaoDoTitulo,
             regiaoMsgExplicativa,
             regiaoDosBotoesDeAcao,
-            regiaoNomeDaMusica,
+            regiaomusicaSendoAvaliada,
             regiaoDosBotoesDeEscolha,
             regiaoMsgResultado,
           ],
@@ -230,25 +234,4 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-}
-
-Column _buildButtonColumn1(Color color, IconData icon, String label) {
-  return Column(
-    mainAxisSize: MainAxisSize.min,
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: [
-      Icon(icon, color: color),
-      Container(
-        margin: const EdgeInsets.only(top: 8, bottom: 8),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: color,
-          ),
-        ),
-      ),
-    ],
-  );
 }
