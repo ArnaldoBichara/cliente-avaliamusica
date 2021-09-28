@@ -1,5 +1,43 @@
-import 'package:flutter/material.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+
+Future<Musica> fetchPredicao() async {
+  var uri = Uri.parse('http://192.168.56.1:5001/predicao');
+  final response = await post(uri, headers: <String, String>{
+    "Content-Type": "application/json; charset=UTF-8"
+  });
+  if (response.statusCode == 200) {
+    return Musica.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Falha ao buscar uma interpretação');
+  }
+}
+
+class Musica {
+  final String interpretacao;
+  final String tipo;
+  Musica({
+    required this.interpretacao,
+    required this.tipo,
+  });
+  factory Musica.fromJson(Map<String, dynamic> json) {
+    return Musica(
+      interpretacao: json['interpretacao'],
+      tipo: json['tipo'],
+    );
+  }
+}
+
+enum Status {
+  predicaoNaoIniciada,
+  predicaoSolicitada,
+  predicaoConcluida,
+  predicaoConcluidaECurtida,
+  predicaoConcluidaENaoCurtida,
+  predicaoConcluidaEIndiferente,
+}
 void main() {
   runApp(const MyApp());
 }
@@ -28,77 +66,109 @@ Column _buildButtonColumn(String texto, Color cor, bool botaoEstaSelecionado,
   );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Avalia Música',
-      theme: ThemeData(
-        primarySwatch: Colors.cyan,
-      ),
-      home: const MyHomePage(title: 'Avalia Música'),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key, required this.title}) : super(key: key);
-  final String title;
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
+class _MyAppState extends State<MyApp> {
+  String _musicaEmAvaliacao = '';
+  String mensagem = '';
 
-class _MyHomePageState extends State<MyHomePage> {
-  String musicaSendoAvaliada = '';
-  String estatisticas = '';
-
+  var _estado = Status.predicaoNaoIniciada;
   bool _boolCurteAMusica = false;
   bool _boolNaoCurteAMusica = false;
   bool _boolIndiferenteAMusica = false;
+  final bool _boolMusEmAvaliacao = true;
+  final bool _boolGetStats = true;
 
-  void _botaoCurteAcionado() {
-    setState(() {
-      _boolCurteAMusica = true;
-      _boolNaoCurteAMusica = false;
-      _boolIndiferenteAMusica = false;
+  void callAPIPredicao() {
+    fetchPredicao().then((musica) {
+      setState(() {
+        _estado = Status.predicaoConcluida;
+        _musicaEmAvaliacao = musica.interpretacao.toString();
+      });
+    }, onError: (error) {
+      setState(() {
+        _estado = Status.predicaoConcluida;
+        _musicaEmAvaliacao = error.toString();
+      });
     });
   }
 
-  final bool _boolMusEmAvaliacao = true;
   void _botaoAvaliarMusAcionado() {
     setState(() {
-      executarAPIdeAvaliacaoMusical();
+      if (_estado == Status.predicaoNaoIniciada) {
+        _boolCurteAMusica = false;
+        _boolNaoCurteAMusica = false;
+        _boolIndiferenteAMusica = false;
+        _estado = Status.predicaoSolicitada;
+        callAPIPredicao();
+      }
+    });
+  }
+
+  widgetMusicaouProgressIndicator() {
+    if (_estado == Status.predicaoNaoIniciada) {
+      return const Text(' ');
+    } else {
+      if (_estado == Status.predicaoSolicitada) {
+        return const CircularProgressIndicator();
+      } else {
+        return Text(
+          _musicaEmAvaliacao,
+          style: Theme.of(context).textTheme.bodyText1,
+        );
+      }
+    }
+  }
+
+  void _botaoCurteAcionado() {
+    setState(() {
+      if (_estado == Status.predicaoConcluida) {
+        _estado = Status.predicaoConcluidaECurtida;
+        _boolCurteAMusica = true;
+        _boolNaoCurteAMusica = false;
+        _boolIndiferenteAMusica = false;
+        apiSetGostoUserA();
+      }
     });
   }
 
   void _botaoNaoCurteAcionado() {
     setState(() {
-      _boolCurteAMusica = false;
-      _boolNaoCurteAMusica = true;
-      _boolIndiferenteAMusica = false;
+      if (_estado == Status.predicaoConcluida) {
+        _estado = Status.predicaoConcluidaENaoCurtida;
+        _boolCurteAMusica = false;
+        _boolNaoCurteAMusica = true;
+        _boolIndiferenteAMusica = false;
+        apiSetGostoUserA();
+      }
     });
   }
 
   void _botaoIndiferenteAcionado() {
     setState(() {
-      _boolCurteAMusica = false;
-      _boolNaoCurteAMusica = false;
-      _boolIndiferenteAMusica = true;
+      if (_estado == Status.predicaoConcluida) {
+        _estado = Status.predicaoConcluidaEIndiferente;
+        _boolCurteAMusica = false;
+        _boolNaoCurteAMusica = false;
+        _boolIndiferenteAMusica = true;
+        apiSetGostoUserA();
+      }
     });
   }
 
-  final bool _boolGetStats = true;
   void _botaoEstatsAcionado() {
     setState(() {
-      estatisticas = getEstats();
+      mensagem = getEstats();
     });
   }
 
-  int _contador = 0;
-  void executarAPIdeAvaliacaoMusical() {
-    _contador++;
-    musicaSendoAvaliada = 'Mais uma do Milton ' + _contador.toString();
+  apiSetGostoUserA() {
+    mensagem = "Gosto setado para " + _estado.toString();
+    _estado = Status.predicaoNaoIniciada;
   }
 
   int _contador2 = 0;
@@ -122,6 +192,31 @@ class _MyHomePageState extends State<MyHomePage> {
               style: TextStyle(
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+    Widget regiaomusicaSendoAvaliada = Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: const Text(
+                    'Música a Avaliar',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                widgetMusicaouProgressIndicator(),
+              ],
             ),
           ),
         ],
@@ -156,33 +251,6 @@ class _MyHomePageState extends State<MyHomePage> {
             Icons.query_stats, Icons.query_stats, _botaoEstatsAcionado),
       ],
     );
-    Widget regiaomusicaSendoAvaliada = Container(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: const Text(
-                    'Música a Avaliar',
-                    textAlign: TextAlign.left,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Text(
-                  musicaSendoAvaliada,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
     Widget regiaoMsgResultado = Container(
       padding: const EdgeInsets.all(24),
       child: Row(
@@ -202,7 +270,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 Text(
-                  estatisticas,
+                  mensagem,
                 ),
               ],
             ),
