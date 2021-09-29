@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 Future<Musica> fetchPredicao() async {
-  var uri = Uri.parse('http://192.168.56.1:5001/predicao');
-  final response = await post(uri, headers: <String, String>{
-    "Content-Type": "application/json; charset=UTF-8"
+  var uri = Uri.parse('http://localhost:5001/predicao');
+  final response = await get(uri, headers: <String, String>{
+    "Content-Type": "application/json; charset=UTF-8",
   });
   if (response.statusCode == 200) {
     return Musica.fromJson(jsonDecode(response.body));
@@ -116,9 +116,18 @@ class _MyAppState extends State<MyApp> {
       if (_estado == Status.predicaoSolicitada) {
         return const CircularProgressIndicator();
       } else {
-        return Text(
-          _musicaEmAvaliacao,
-          style: Theme.of(context).textTheme.bodyText1,
+        return Container(
+          margin: const EdgeInsets.all(2.0),
+          padding: const EdgeInsets.all(5.0),
+          decoration:
+              BoxDecoration(border: Border.all(color: Colors.blueAccent)),
+          child: SelectableText(
+            _musicaEmAvaliacao,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.cyan,
+            ),
+          ),
         );
       }
     }
@@ -208,7 +217,7 @@ class _MyAppState extends State<MyApp> {
                 Container(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: const Text(
-                    'Música a Avaliar',
+                    'Música a Avaliar : ',
                     textAlign: TextAlign.left,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,

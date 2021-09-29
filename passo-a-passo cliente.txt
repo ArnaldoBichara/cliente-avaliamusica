@@ -4,5 +4,5 @@ Web server rodando:
 	docker run -d -p 5001:5001 arnaldobichara/api_avaliamusica
 - para verificar:
 	netstat -an | findstr 5001
-	curl --location --request POST "http://127.0.0.1:5001/predicao" --header "Content-Type: application/json" 
-	curl --location --request POST 'http://127.0.0.1:5001/predicao' --header 'Content-Type: application/json' 
+	curl --location --request GET "http://127.0.0.1:5001/predicao" --header "Content-Type: application/json" 
+	curl --location --request GET 'http://127.0.0.1:5001/predicao' --header 'Content-Type: application/json' 
