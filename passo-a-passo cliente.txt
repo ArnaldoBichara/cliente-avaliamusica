@@ -1,5 +1,7 @@
 Web server rodando:
 - subir docker desktop
+- para trazer última versão do docker hub
+	docker pull arnaldobichara/api_avaliamusica
 - na linha de comando:
 	docker run -d -p 5001:5001 arnaldobichara/api_avaliamusica
 - para verificar:

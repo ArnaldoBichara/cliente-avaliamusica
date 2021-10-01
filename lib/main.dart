@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 Future<Musica> fetchPredicao() async {
-  var uri = Uri.parse('http://localhost:5001/predicao');
+  var uri = Uri.parse('http://localhost:5001/predicao/');
   final response = await get(uri, headers: <String, String>{
     "Content-Type": "application/json; charset=UTF-8",
   });
@@ -74,6 +74,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _musicaEmAvaliacao = '';
+  String _predicaoDaMusica = '';
   String mensagem = '';
 
   var _estado = Status.predicaoNaoIniciada;
@@ -88,10 +89,11 @@ class _MyAppState extends State<MyApp> {
       setState(() {
         _estado = Status.predicaoConcluida;
         _musicaEmAvaliacao = musica.interpretacao.toString();
+        _predicaoDaMusica = musica.tipo;
       });
     }, onError: (error) {
       setState(() {
-        _estado = Status.predicaoConcluida;
+        _estado = Status.predicaoNaoIniciada;
         _musicaEmAvaliacao = error.toString();
       });
     });
@@ -140,7 +142,7 @@ class _MyAppState extends State<MyApp> {
         _boolCurteAMusica = true;
         _boolNaoCurteAMusica = false;
         _boolIndiferenteAMusica = false;
-        apiSetGostoUserA();
+        setGostoUserA();
       }
     });
   }
@@ -152,7 +154,7 @@ class _MyAppState extends State<MyApp> {
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = true;
         _boolIndiferenteAMusica = false;
-        apiSetGostoUserA();
+        setGostoUserA();
       }
     });
   }
@@ -164,7 +166,7 @@ class _MyAppState extends State<MyApp> {
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = false;
         _boolIndiferenteAMusica = true;
-        apiSetGostoUserA();
+        setGostoUserA();
       }
     });
   }
@@ -175,8 +177,34 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  apiSetGostoUserA() {
-    mensagem = "Gosto setado para " + _estado.toString();
+  setGostoUserA() {
+    if (_boolCurteAMusica == true) {
+      if (_predicaoDaMusica == 'Curte') {
+        mensagem = "Legal que você gostou! Avalia Música também curte " +
+            _musicaEmAvaliacao;
+      } else {
+        mensagem = "Puxa, você gosta? Eu esperava que não curtisse " +
+            _musicaEmAvaliacao;
+      }
+    } else if (_boolNaoCurteAMusica == true) {
+      if (_predicaoDaMusica == 'Curte') {
+        mensagem = "Puxa, você não gosta? Eu esperava que você curtisse  " +
+            _musicaEmAvaliacao;
+      } else {
+        mensagem =
+            "Pois é! Avalia Música também não curte " + _musicaEmAvaliacao;
+      }
+    } else {
+      if (_predicaoDaMusica == 'Curte') {
+        mensagem =
+            "Interessante. Pra você essa música é indiferente. Avalia Música curte " +
+                _musicaEmAvaliacao;
+      } else {
+        mensagem =
+            "Interessante. Pra você essa música é indiferente. Avalia Música não curte " +
+                _musicaEmAvaliacao;
+      }
+    }
     _estado = Status.predicaoNaoIniciada;
   }
 
