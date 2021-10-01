@@ -3,6 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
+String musicaEmAvaliacao = '';
+String predicaoDaMusica = '';
+String gostoDoUserA = '';
+
 Future<Musica> fetchPredicao() async {
   var uri = Uri.parse('http://localhost:5001/predicao/');
   final response = await get(uri, headers: <String, String>{
@@ -13,6 +17,20 @@ Future<Musica> fetchPredicao() async {
   } else {
     throw Exception('Falha ao buscar uma interpretação');
   }
+}
+
+postGostoMusicalAPI() async {
+  var uri = Uri.parse('http://localhost:5001/predicao/');
+  post(
+    uri,
+    headers: <String, String>{
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: jsonEncode(<String, String>{
+      'interpretacao': musicaEmAvaliacao,
+      'tipo': gostoDoUserA,
+    }),
+  );
 }
 
 class Musica {
@@ -73,8 +91,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _musicaEmAvaliacao = '';
-  String _predicaoDaMusica = '';
   String mensagem = '';
 
   var _estado = Status.predicaoNaoIniciada;
@@ -88,13 +104,13 @@ class _MyAppState extends State<MyApp> {
     fetchPredicao().then((musica) {
       setState(() {
         _estado = Status.predicaoConcluida;
-        _musicaEmAvaliacao = musica.interpretacao.toString();
-        _predicaoDaMusica = musica.tipo;
+        musicaEmAvaliacao = musica.interpretacao.toString();
+        predicaoDaMusica = musica.tipo;
       });
     }, onError: (error) {
       setState(() {
         _estado = Status.predicaoNaoIniciada;
-        _musicaEmAvaliacao = error.toString();
+        musicaEmAvaliacao = error.toString();
       });
     });
   }
@@ -124,7 +140,7 @@ class _MyAppState extends State<MyApp> {
           decoration:
               BoxDecoration(border: Border.all(color: Colors.blueAccent)),
           child: SelectableText(
-            _musicaEmAvaliacao,
+            musicaEmAvaliacao,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.cyan,
@@ -139,10 +155,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       if (_estado == Status.predicaoConcluida) {
         _estado = Status.predicaoConcluidaECurtida;
+        gostoDoUserA = 'Curte';
         _boolCurteAMusica = true;
         _boolNaoCurteAMusica = false;
         _boolIndiferenteAMusica = false;
-        setGostoUserA();
+        trataGostoUserA();
       }
     });
   }
@@ -151,10 +168,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       if (_estado == Status.predicaoConcluida) {
         _estado = Status.predicaoConcluidaENaoCurtida;
+        gostoDoUserA = 'NaoCurte';
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = true;
         _boolIndiferenteAMusica = false;
-        setGostoUserA();
+        trataGostoUserA();
       }
     });
   }
@@ -163,10 +181,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       if (_estado == Status.predicaoConcluida) {
         _estado = Status.predicaoConcluidaEIndiferente;
+        gostoDoUserA = 'Indiferente';
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = false;
         _boolIndiferenteAMusica = true;
-        setGostoUserA();
+        trataGostoUserA();
       }
     });
   }
@@ -177,32 +196,33 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  setGostoUserA() {
+  trataGostoUserA() {
+    postGostoMusicalAPI();
     if (_boolCurteAMusica == true) {
-      if (_predicaoDaMusica == 'Curte') {
+      if (predicaoDaMusica == 'Curte') {
         mensagem = "Legal que você gostou! Avalia Música também curte " +
-            _musicaEmAvaliacao;
+            musicaEmAvaliacao;
       } else {
         mensagem = "Puxa, você gosta? Eu esperava que não curtisse " +
-            _musicaEmAvaliacao;
+            musicaEmAvaliacao;
       }
     } else if (_boolNaoCurteAMusica == true) {
-      if (_predicaoDaMusica == 'Curte') {
+      if (predicaoDaMusica == 'Curte') {
         mensagem = "Puxa, você não gosta? Eu esperava que você curtisse  " +
-            _musicaEmAvaliacao;
+            musicaEmAvaliacao;
       } else {
         mensagem =
-            "Pois é! Avalia Música também não curte " + _musicaEmAvaliacao;
+            "Pois é! Avalia Música também não curte " + musicaEmAvaliacao;
       }
     } else {
-      if (_predicaoDaMusica == 'Curte') {
+      if (predicaoDaMusica == 'Curte') {
         mensagem =
             "Interessante. Pra você essa música é indiferente. Avalia Música curte " +
-                _musicaEmAvaliacao;
+                musicaEmAvaliacao;
       } else {
         mensagem =
             "Interessante. Pra você essa música é indiferente. Avalia Música não curte " +
-                _musicaEmAvaliacao;
+                musicaEmAvaliacao;
       }
     }
     _estado = Status.predicaoNaoIniciada;
