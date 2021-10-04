@@ -7,32 +7,6 @@ String musicaEmAvaliacao = '';
 String predicaoDaMusica = '';
 String gostoDoUserA = '';
 
-Future<Musica> fetchPredicao() async {
-  var uri = Uri.parse('http://localhost:5001/predicao/');
-  final response = await get(uri, headers: <String, String>{
-    "Content-Type": "application/json; charset=UTF-8",
-  });
-  if (response.statusCode == 200) {
-    return Musica.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception('Falha ao buscar uma interpretação');
-  }
-}
-
-postGostoMusicalAPI() async {
-  var uri = Uri.parse('http://localhost:5001/predicao/');
-  post(
-    uri,
-    headers: <String, String>{
-      "Content-Type": "application/json; charset=UTF-8",
-    },
-    body: jsonEncode(<String, String>{
-      'interpretacao': musicaEmAvaliacao,
-      'tipo': gostoDoUserA,
-    }),
-  );
-}
-
 class Musica {
   final String interpretacao;
   final String tipo;
@@ -45,6 +19,60 @@ class Musica {
       interpretacao: json['interpretacao'],
       tipo: json['tipo'],
     );
+  }
+}
+
+const url = 'http://192.168.15.156:5001/';
+Future<Musica> getPredicao() async {
+  var uri = Uri.parse(url + 'predicao/');
+  final response = await get(uri, headers: <String, String>{
+    "Content-Type": "application/json; charset=UTF-8",
+  });
+  if (response.statusCode == 200) {
+    return Musica.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Falha ao buscar uma interpretação');
+  }
+}
+
+Future<Estats> getEstats() async {
+  var uri = Uri.parse(url + 'stats/');
+  final response = await get(uri, headers: <String, String>{
+    "Content-Type": "application/json; charset=UTF-8",
+  });
+  if (response.statusCode == 200) {
+    return Estats.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Falha ao buscar estatísticas');
+  }
+}
+
+Future<Estats> enviaGostoMusical() async {
+  var uri = Uri.parse(url + 'predicao/');
+  final response = await post(
+    uri,
+    headers: <String, String>{
+      "Content-Type": "application/json; charset=UTF-8",
+    },
+    body: jsonEncode(<String, String>{
+      'gostoReal': gostoDoUserA,
+      'predicao': predicaoDaMusica,
+    }),
+  );
+  if ((response.statusCode == 200) || (response.statusCode == 201)) {
+    return Estats.fromJson(jsonDecode(response.body));
+  } else {
+    throw Exception('Falha ao enviar gosto musical');
+  }
+}
+
+class Estats {
+  final String texto;
+  Estats({
+    required this.texto,
+  });
+  factory Estats.fromJson(Map<String, dynamic> json) {
+    return Estats(texto: json['texto']);
   }
 }
 
@@ -91,17 +119,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String mensagem = '';
-
+  String campoDeMensagem = '';
+  String campoDeEstats = '';
   var _estado = Status.predicaoNaoIniciada;
   bool _boolCurteAMusica = false;
   bool _boolNaoCurteAMusica = false;
-  bool _boolIndiferenteAMusica = false;
+//  bool _boolIndiferenteAMusica = false;
   final bool _boolMusEmAvaliacao = true;
-  final bool _boolGetStats = true;
+//  final bool _boolGetStats = true;
 
   void callAPIPredicao() {
-    fetchPredicao().then((musica) {
+    getPredicao().then((musica) {
       setState(() {
         _estado = Status.predicaoConcluida;
         musicaEmAvaliacao = musica.interpretacao.toString();
@@ -120,7 +148,7 @@ class _MyAppState extends State<MyApp> {
       if (_estado == Status.predicaoNaoIniciada) {
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = false;
-        _boolIndiferenteAMusica = false;
+//        _boolIndiferenteAMusica = false;
         _estado = Status.predicaoSolicitada;
         callAPIPredicao();
       }
@@ -158,7 +186,7 @@ class _MyAppState extends State<MyApp> {
         gostoDoUserA = 'Curte';
         _boolCurteAMusica = true;
         _boolNaoCurteAMusica = false;
-        _boolIndiferenteAMusica = false;
+//        _boolIndiferenteAMusica = false;
         trataGostoUserA();
       }
     });
@@ -171,67 +199,80 @@ class _MyAppState extends State<MyApp> {
         gostoDoUserA = 'NaoCurte';
         _boolCurteAMusica = false;
         _boolNaoCurteAMusica = true;
-        _boolIndiferenteAMusica = false;
+//        _boolIndiferenteAMusica = false;
         trataGostoUserA();
       }
     });
   }
 
-  void _botaoIndiferenteAcionado() {
-    setState(() {
-      if (_estado == Status.predicaoConcluida) {
-        _estado = Status.predicaoConcluidaEIndiferente;
-        gostoDoUserA = 'Indiferente';
-        _boolCurteAMusica = false;
-        _boolNaoCurteAMusica = false;
-        _boolIndiferenteAMusica = true;
-        trataGostoUserA();
-      }
-    });
-  }
+//   void _botaoIndiferenteAcionado() {
+//     setState(() {
+//       if (_estado == Status.predicaoConcluida) {
+//         _estado = Status.predicaoConcluidaEIndiferente;
+//         gostoDoUserA = 'Indiferente';
+//         _boolCurteAMusica = false;
+//         _boolNaoCurteAMusica = false;
+//         _boolIndiferenteAMusica = true;
+//         trataGostoUserA();
+//       }
+//     });
+//   }
 
   void _botaoEstatsAcionado() {
-    setState(() {
-      mensagem = getEstats();
+    getEstats().then((estats) {
+      setState(() {
+        campoDeEstats = estats.texto.toString();
+      });
+    }, onError: (error) {
+      setState(() {
+        campoDeEstats = error.toString();
+      });
     });
   }
 
   trataGostoUserA() {
-    postGostoMusicalAPI();
-    if (_boolCurteAMusica == true) {
-      if (predicaoDaMusica == 'Curte') {
-        mensagem = "Legal que você gostou! Avalia Música também curte " +
-            musicaEmAvaliacao;
-      } else {
-        mensagem = "Puxa, você gosta? Eu esperava que não curtisse " +
-            musicaEmAvaliacao;
-      }
-    } else if (_boolNaoCurteAMusica == true) {
-      if (predicaoDaMusica == 'Curte') {
-        mensagem = "Puxa, você não gosta? Eu esperava que você curtisse  " +
-            musicaEmAvaliacao;
-      } else {
-        mensagem =
-            "Pois é! Avalia Música também não curte " + musicaEmAvaliacao;
-      }
-    } else {
-      if (predicaoDaMusica == 'Curte') {
-        mensagem =
-            "Interessante. Pra você essa música é indiferente. Avalia Música curte " +
-                musicaEmAvaliacao;
-      } else {
-        mensagem =
-            "Interessante. Pra você essa música é indiferente. Avalia Música não curte " +
-                musicaEmAvaliacao;
-      }
-    }
+    enviaGostoMusical().then((estats) {
+      setState(() {
+        campoDeEstats = estats.texto.toString();
+        if (_boolCurteAMusica == true) {
+          if (predicaoDaMusica == 'Curte') {
+            campoDeMensagem =
+                "Legal que você gostou! Avalia Música também curte " +
+                    musicaEmAvaliacao;
+          } else {
+            campoDeMensagem =
+                "Puxa, você gosta? Eu esperava que não curtisse " +
+                    musicaEmAvaliacao;
+          }
+        } else if (_boolNaoCurteAMusica == true) {
+          if (predicaoDaMusica == 'Curte') {
+            campoDeMensagem =
+                "Puxa, você não gosta? Eu esperava que você curtisse  " +
+                    musicaEmAvaliacao;
+          } else {
+            campoDeMensagem =
+                "Pois é! Avalia Música também não curte " + musicaEmAvaliacao;
+          }
+        } else {
+          if (predicaoDaMusica == 'Curte') {
+            campoDeMensagem =
+                "Interessante... Pra você essa música é indiferente. Avalia Música curte " +
+                    musicaEmAvaliacao;
+          } else {
+            campoDeMensagem =
+                "Interessante... Pra você essa música é indiferente. Avalia Música não curte " +
+                    musicaEmAvaliacao;
+          }
+        }
+      });
+    }, onError: (error) {
+      setState(() {
+        campoDeMensagem = error.toString();
+        campoDeEstats = error.toString();
+      });
+    });
+    // simula botão de estats sendo acionado
     _estado = Status.predicaoNaoIniciada;
-  }
-
-  int _contador2 = 0;
-  String getEstats() {
-    _contador2++;
-    return "Estatísticas saindo do forno: " + _contador2.toString();
   }
 
   @override
@@ -295,8 +336,8 @@ class _MyAppState extends State<MyApp> {
             Icons.favorite, Icons.favorite_border, _botaoCurteAcionado),
         _buildButtonColumn('Não Curto', Colors.redAccent, _boolNaoCurteAMusica,
             Icons.favorite, Icons.favorite_border, _botaoNaoCurteAcionado),
-        _buildButtonColumn('Indiferente', Colors.brown, _boolIndiferenteAMusica,
-            Icons.favorite, Icons.favorite_border, _botaoIndiferenteAcionado),
+        // _buildButtonColumn('Indiferente', Colors.brown, _boolIndiferenteAMusica,
+        //     Icons.favorite, Icons.favorite_border, _botaoIndiferenteAcionado),
       ],
     );
     Widget regiaoDosBotoesDeAcao = Row(
@@ -304,8 +345,8 @@ class _MyAppState extends State<MyApp> {
       children: [
         _buildButtonColumn('Nova Avaliação', color, _boolMusEmAvaliacao,
             Icons.add, Icons.add, _botaoAvaliarMusAcionado),
-        _buildButtonColumn('Estatísticas', color, _boolGetStats,
-            Icons.query_stats, Icons.query_stats, _botaoEstatsAcionado),
+        // _buildButtonColumn('Estatísticas', color, _boolGetStats,
+        //     Icons.query_stats, Icons.query_stats, _botaoEstatsAcionado),
       ],
     );
     Widget regiaoMsgResultado = Container(
@@ -327,7 +368,13 @@ class _MyAppState extends State<MyApp> {
                   ),
                 ),
                 Text(
-                  mensagem,
+                  campoDeMensagem,
+                ),
+                Container(
+                  padding: const EdgeInsets.only(bottom: 8, top: 8),
+                  child: Text(
+                    campoDeEstats,
+                  ),
                 ),
               ],
             ),
