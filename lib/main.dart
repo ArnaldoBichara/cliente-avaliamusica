@@ -218,18 +218,6 @@ class _MyAppState extends State<MyApp> {
 //     });
 //   }
 
-  void _botaoEstatsAcionado() {
-    getEstats().then((estats) {
-      setState(() {
-        campoDeEstats = estats.texto.toString();
-      });
-    }, onError: (error) {
-      setState(() {
-        campoDeEstats = error.toString();
-      });
-    });
-  }
-
   trataGostoUserA() {
     enviaGostoMusical().then((estats) {
       setState(() {
