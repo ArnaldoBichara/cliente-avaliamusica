@@ -35,17 +35,17 @@ Future<Musica> getPredicao() async {
   }
 }
 
-Future<Estats> getEstats() async {
-  var uri = Uri.parse(url + 'stats/');
-  final response = await get(uri, headers: <String, String>{
-    "Content-Type": "application/json; charset=UTF-8",
-  });
-  if (response.statusCode == 200) {
-    return Estats.fromJson(jsonDecode(response.body));
-  } else {
-    throw Exception('Falha ao buscar estatísticas');
-  }
-}
+// Future<Estats> getEstats() async {
+//   var uri = Uri.parse(url + 'stats/');
+//   final response = await get(uri, headers: <String, String>{
+//     "Content-Type": "application/json; charset=UTF-8",
+//   });
+//   if (response.statusCode == 200) {
+//     return Estats.fromJson(jsonDecode(response.body));
+//   } else {
+//     throw Exception('Falha ao buscar estatísticas');
+//   }
+// }
 
 Future<Estats> enviaGostoMusical() async {
   var uri = Uri.parse(url + 'predicao/');
@@ -126,7 +126,7 @@ class _MyAppState extends State<MyApp> {
   bool _boolNaoCurteAMusica = false;
 //  bool _boolIndiferenteAMusica = false;
   final bool _boolMusEmAvaliacao = true;
-//  final bool _boolGetStats = true;
+  final bool _boolZeraStats = true;
 
   void callAPIPredicao() {
     getPredicao().then((musica) {
@@ -153,6 +153,12 @@ class _MyAppState extends State<MyApp> {
         callAPIPredicao();
       }
     });
+  }
+
+  void _botaoZeraEstatsAcionado() {
+    //   setState(() {
+    //     getEstats();
+    //   });
   }
 
   widgetMusicaouProgressIndicator() {
@@ -333,8 +339,8 @@ class _MyAppState extends State<MyApp> {
       children: [
         _buildButtonColumn('Nova Avaliação', color, _boolMusEmAvaliacao,
             Icons.add, Icons.add, _botaoAvaliarMusAcionado),
-        // _buildButtonColumn('Estatísticas', color, _boolGetStats,
-        //     Icons.query_stats, Icons.query_stats, _botaoEstatsAcionado),
+        _buildButtonColumn('Zera Estatísticas', color, _boolZeraStats,
+            Icons.query_stats, Icons.query_stats, _botaoZeraEstatsAcionado),
       ],
     );
     Widget regiaoMsgResultado = Container(
@@ -379,7 +385,7 @@ class _MyAppState extends State<MyApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Avalia Música'),
+          title: const Text('Robô que Avalia Música como User A'),
         ),
         body: Column(
           children: [
