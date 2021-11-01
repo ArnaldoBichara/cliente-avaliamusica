@@ -317,9 +317,9 @@ class _MyAppState extends State<MyApp> {
     Widget regiaoMsgExplicativa = const Padding(
       padding: EdgeInsets.all(24),
       child: Text(
-        'Vamos avaliar uma música? Clique em ‘Nova Avaliação’ e eu '
-        'te passo uma música. Aí você me conta se gosta ou não e eu '
-        'te falo minha avaliação, ok?',
+        'Utiliza Sistema de Recomendação por Colaboração e por Análise de Conteúdo\n\n'
+        'Clique em ‘Nova Avaliação’ e eu te passo uma nova música.\n'
+        'Aí você me conta se curte ou não e te passo minha avaliação',
         softWrap: true,
       ),
     );
@@ -385,7 +385,7 @@ class _MyAppState extends State<MyApp> {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Robô que Avalia Música como User A'),
+          title: const Text('Avalia Música do Spotify como Usuário A'),
         ),
         body: Column(
           children: [
