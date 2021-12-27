@@ -145,13 +145,13 @@ class _MyAppState extends State<MyApp> {
 
   void _botaoAvaliarMusAcionado() {
     setState(() {
-      if (_estado == Status.predicaoNaoIniciada) {
-        _boolCurteAMusica = false;
-        _boolNaoCurteAMusica = false;
+//      if (_estado == Status.predicaoNaoIniciada) {
+      _boolCurteAMusica = false;
+      _boolNaoCurteAMusica = false;
 //        _boolIndiferenteAMusica = false;
-        _estado = Status.predicaoSolicitada;
-        callAPIPredicao();
-      }
+      _estado = Status.predicaoSolicitada;
+      callAPIPredicao();
+//      }
     });
   }
 
